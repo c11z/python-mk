@@ -46,7 +46,7 @@ test: check
 		--volume $(CURDIR):/script \
 		--workdir /script \
 		$(IMAGE) \
-		python3 -B -m unittest
+		python3 -B -m pytest
 
 console: build
 	@docker run \
@@ -99,32 +99,27 @@ define requirements_txt
 # Development
 black
 mypy
+pytest
 endef
 export requirements_txt
 
 define main_py
 def main() -> str:
-	return "Hello World"
+    return "Hello World"
 
 
 if __name__ == "__main__":
-	greeting = main()
-	print(greeting)
+    greeting = main()
+    print(greeting)
 endef
 export main_py
 
 define test_main_py
-import unittest
 import main
 
 
-class MainTestCase(unittest.TestCase):
-	def test_main(self):
-		self.assertEqual(main.main(), "Hello World")
-
-
-if __name__ == "__main__":
-	unittest.main()
+def test_main():
+    assert main.main() == "Hello World"
 endef
 export test_main_py
 
