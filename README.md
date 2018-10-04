@@ -1,6 +1,6 @@
 # python.mk
 
-A Makefile based approach to generate a python development environment.
+A Makefile that contains the seed of a python development environment.
 
 Inspired by [erlang.mk](https://github.com/ninenines/erlang.mk) and [elm.mk](https://github.com/cloud8421/elm.mk).
 
@@ -19,9 +19,29 @@ make -f python.mk install
 ```
 
 Technologies:
-* Makefile
-* Docker
-* Python 3.7
-* unittest
-* [black](https://github.com/ambv/black)
-* [mypy](https://github.com/python/mypy)
+* Makefile (consolidation of common tasks)
+* Docker (immutable builds)
+* Python 3.7 (hurrah!)
+* pytest (pytest)
+* [black](https://github.com/ambv/black) (any color)
+* [mypy](https://github.com/python/mypy) (static type checking)
+
+The install command generates a project structure
+```
+> tree -a
+.
+├── Dockerfile
+├── .gitignore
+├── main.py
+├── Makefile
+├── python.mk
+├── requirements.txt
+└── test_main.py
+```
+
+The new Makefile extends python.mk so you don't need to ever edit it directly.
+
+Supported commands:
+```
+make [install, build, format, check, run, test, console]
+```
