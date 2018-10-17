@@ -3,7 +3,7 @@
 .PHONY: install build build_quiet format check watch run test console
 
 APP_NAME?=main
-IMAGE?=pythonmk:latest
+IMAGE_TAG?=pythonmk:latest
 MAINTAINER?=person@example.com
 
 MODD_VERSION = 0.4
@@ -27,33 +27,33 @@ install: $(INSTALL_TARGETS)
 build_quiet:
 	@docker build \
 		--quiet \
-		--tag=$(IMAGE) \
+		--tag=$(IMAGE_TAG) \
 		.
 
 build:
 	@docker build \
-		--tag=$(IMAGE) \
+		--tag=$(IMAGE_TAG) \
 		.
 
 format: build_quiet
 	@docker run \
 		--rm \
 		--volume $(CURDIR):/script \
-		$(IMAGE) \
+		$(IMAGE_TAG) \
 		black --quiet /script
 
 check: format
 	@docker run \
 		--rm \
 		--volume $(CURDIR):/script \
-		$(IMAGE) \
+		$(IMAGE_TAG) \
 		python3 -m mypy /script
 
 run: build_quiet
 	@docker run \
 		--rm \
 		--volume $(CURDIR):/script \
-		$(IMAGE) \
+		$(IMAGE_TAG) \
 		python3 /script/$(APP_NAME).py
 
 test: check
@@ -61,7 +61,7 @@ test: check
 		--rm \
 		--volume $(CURDIR):/script \
 		--workdir /script \
-		$(IMAGE) \
+		$(IMAGE_TAG) \
 		python3 -B -m pytest -p no:cacheprovider
 
 console: build_quiet
@@ -71,7 +71,7 @@ console: build_quiet
 		--interactive \
 		--volume $(CURDIR):/script \
 		--workdir /script \
-		$(IMAGE) \
+		$(IMAGE_TAG) \
 		/bin/bash
 
 watch:
@@ -118,7 +118,7 @@ export modd_config
 
 define Makefile
 APP_NAME=$(APP_NAME)
-IMAGE=$(IMAGE)
+IMAGE_TAG=$(IMAGE_TAG)
 MAINTAINER=$(MAINTAINER)
 
 include python.mk
