@@ -21,6 +21,7 @@ make -f python.mk install
 Technologies:
 * Makefile (consolidation of common tasks)
 * Docker (immutable builds)
+* [modd](https://github.com/cortesi/modd) (monitor filesystem changes)
 * Python 3.7 (hurrah!)
 * pytest (pytest)
 * [black](https://github.com/ambv/black) (any color)
@@ -28,14 +29,17 @@ Technologies:
 
 The install command generates a project structure
 ```
-> tree -a
+tree -a
 .
 ├── Dockerfile
 ├── .gitignore
 ├── main.py
 ├── Makefile
+├── modd.conf
 ├── python.mk
 ├── requirements.txt
+├── scripts
+│   └── modd
 └── test_main.py
 ```
 

@@ -1,16 +1,19 @@
 # Makefile for generating python scripting development environment.git
 
-.PHONY: install build format check watch run test console clean_install
+.PHONY: install build build_quiet format check watch run test console
 
-IMAGE=pythonmk:latest
+APP_NAME?=main
+IMAGE?=pythonmk:latest
+MAINTAINER?=person@example.com
+
 MODD_VERSION = 0.4
 INSTALL_TARGETS = scripts \
 	scripts/modd modd.conf \
 	Makefile \
 	Dockerfile \
 	requirements.txt \
-	main.py \
-	test_main.py \
+	$(APP_NAME).py \
+	test_$(APP_NAME).py \
 	.gitignore
 
 ifeq ($(OS),Darwin)
@@ -21,13 +24,18 @@ endif
 
 install: $(INSTALL_TARGETS)
 
-build:
+build_quiet:
 	@docker build \
 		--quiet \
 		--tag=$(IMAGE) \
 		.
 
-format: build
+build:
+	@docker build \
+		--tag=$(IMAGE) \
+		.
+
+format: build_quiet
 	@docker run \
 		--rm \
 		--volume $(CURDIR):/script \
@@ -41,12 +49,12 @@ check: format
 		$(IMAGE) \
 		python3 -m mypy /script
 
-run: check
+run: build_quiet
 	@docker run \
 		--rm \
 		--volume $(CURDIR):/script \
 		$(IMAGE) \
-		python3 /script/main.py
+		python3 /script/$(APP_NAME).py
 
 test: check
 	@docker run \
@@ -54,9 +62,9 @@ test: check
 		--volume $(CURDIR):/script \
 		--workdir /script \
 		$(IMAGE) \
-		python3 -B -m pytest
+		python3 -B -m pytest -p no:cacheprovider
 
-console: build
+console: build_quiet
 	@docker run \
 		--rm \
 		--tty \
@@ -68,9 +76,6 @@ console: build
 
 watch:
 	scripts/modd
-
-clean_install:
-	rm $(INSTALL_TARGETS)
 
 scripts:
 	mkdir -p $@
@@ -84,10 +89,10 @@ Dockerfile:
 requirements.txt:
 	@test -s $@ || echo "$$requirements_txt" > $@
 
-main.py:
+$(APP_NAME).py:
 	@test -s $@ || echo "$$main_py" > $@
 
-test_main.py:
+test_$(APP_NAME).py:
 	@test -s $@ || echo "$$test_main_py" > $@
 
 .gitignore:
@@ -105,10 +110,16 @@ define modd_config
 **/*.py {
 	prep: make test
 }
+Dockerfile requests.txt {
+	prep: make build
+}
 endef
 export modd_config
 
 define Makefile
+APP_NAME=$(APP_NAME)
+IMAGE=$(IMAGE)
+MAINTAINER=$(MAINTAINER)
 
 include python.mk
 endef
@@ -116,7 +127,7 @@ export Makefile
 
 define Dockerfile
 FROM python:3.7-slim-stretch
-LABEL maintainer=corydominguez@gmail.com
+LABEL maintainer=$(MAINTAINER)
 
 COPY requirements.txt /
 RUN pip install -r /requirements.txt
@@ -144,16 +155,17 @@ endef
 export main_py
 
 define test_main_py
-import main
+import $(APP_NAME)
 
 
-def test_main():
-    assert main.main() == "Hello World"
+def test_$(APP_NAME)():
+    assert $(APP_NAME).main() == "Hello World"
 endef
 export test_main_py
 
 define gitignore
 *.py[cod]
 __pycache__
+scripts/modd
 endef
 export gitignore
