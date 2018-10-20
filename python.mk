@@ -13,6 +13,7 @@
 APP_NAME?=main
 IMAGE_TAG?=pythonmk:latest
 MAINTAINER?=person@example.com
+UGID=$(shell id -u):$(shell id -g)
 
 MODD_VERSION = 0.4
 INSTALL_TARGETS = scripts \
@@ -46,13 +47,15 @@ build:
 format: build_quiet
 	@docker run \
 		--rm \
+		--user $(UGID) \
 		--volume $(CURDIR):/script \
 		$(IMAGE_TAG) \
-		black --quiet /script
+		python3 -m black --quiet /script
 
 check: format
 	@docker run \
 		--rm \
+		--user $(UGID) \
 		--volume $(CURDIR):/script \
 		$(IMAGE_TAG) \
 		python3 -m mypy /script
@@ -60,23 +63,26 @@ check: format
 run: build_quiet
 	@docker run \
 		--rm \
+		--user $(UGID) \
 		--volume $(CURDIR):/script \
 		$(IMAGE_TAG) \
 		python3 /script/$(APP_NAME).py
 
-test: check
+test: format
 	@docker run \
 		--rm \
+		--user $(UGID) \
 		--volume $(CURDIR):/script \
 		--workdir /script \
 		$(IMAGE_TAG) \
-		python3 -B -m pytest -p no:cacheprovider
+		python3 -m pytest
 
 console: build_quiet
 	@docker run \
 		--rm \
 		--tty \
 		--interactive \
+		--user $(UGID) \
 		--volume $(CURDIR):/script \
 		--workdir /script \
 		$(IMAGE_TAG) \
@@ -174,6 +180,8 @@ export test_main_py
 define gitignore
 *.py[cod]
 __pycache__
+.mypy_cache
+.pytest_cache
 scripts/modd
 endef
 export gitignore
