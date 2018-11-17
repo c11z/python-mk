@@ -53,7 +53,7 @@ format: build_quiet
 		$(IMAGE_TAG) \
 		python3 -m black --quiet /script
 
-check: format
+check: build_quiet
 	@docker run \
 		--rm \
 		--user $(UGID) \
@@ -70,7 +70,7 @@ run: build_quiet
 		$(IMAGE_TAG) \
 		python3 /script/$(APP_NAME).py
 
-test: format
+test: build_quiet
 	@docker run \
 		--rm \
 		--user $(UGID) \
@@ -129,6 +129,8 @@ modd.conf:
 
 define modd_config
 **/*.py {
+	prep: make format
+	prep: make check
 	prep: make test
 }
 Dockerfile requests.txt {
