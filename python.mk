@@ -58,7 +58,7 @@ check: format
 		--user $(UGID) \
 		--volume $(CURDIR):/script \
 		$(IMAGE_TAG) \
-		python3 -m mypy /script
+		python3 -m mypy --ignore-missing-imports /script
 
 run: build_quiet
 	@docker run \
