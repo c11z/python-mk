@@ -152,6 +152,11 @@ define Dockerfile
 FROM python:3.7-slim-stretch
 LABEL maintainer=$(MAINTAINER)
 
+RUN apt update && \
+	apt upgrade -y && \
+	apt install -y \
+	tree
+
 COPY requirements.txt /
 RUN pip install -r /requirements.txt
 endef
