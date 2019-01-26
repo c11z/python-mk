@@ -51,7 +51,10 @@ format: build_quiet
 		--user $(UGID) \
 		--volume $(CURDIR):/script \
 		$(IMAGE_TAG) \
-		python3 -m black --quiet /script
+		/bin/bash -c \
+		"python3 -m isort -rc /script && \
+		python3 -m autoflake -r --in-place --remove-unused-variables /script && \
+		python3 -m black --quiet /script"
 
 check: build_quiet
 	@docker run \
@@ -168,6 +171,8 @@ define requirements_txt
 black
 pytest
 mypy
+isort
+autoflake
 endef
 export requirements_txt
 
