@@ -8,7 +8,7 @@
 
 # Makefile for generating python scripting development environment.
 
-.PHONY: install build build_quiet format check watch run test console
+.PHONY: install build build_quiet format check watch run test console clean clean_cache
 
 APP_NAME?=main
 IMAGE_TAG?=pythonmk:latest
@@ -32,6 +32,8 @@ else
 	MODD_URL = "https://github.com/cortesi/modd/releases/download/v${MODD_VERSION}/modd-${MODD_VERSION}-linux64.tgz"
 endif
 
+default: build
+
 install: $(INSTALL_TARGETS)
 
 build_quiet:
@@ -54,7 +56,7 @@ format: build_quiet
 		/bin/bash -c \
 		"python3 -m isort -rc /script && \
 		python3 -m autoflake -r --in-place --remove-unused-variables /script && \
-		python3 -m black --quiet /script"
+		python3 -m black /script"
 
 check: build_quiet
 	@docker run \
@@ -94,6 +96,15 @@ console: build_quiet
 		--workdir /script \
 		$(IMAGE_TAG) \
 		/bin/bash
+
+clean: clean_cache
+
+clean_cache:
+	find $(CURDIR) \
+		-type f -iregex ".*.py[co]" -delete -o \
+		-type d -name "__pycache__" -delete -o \
+		-type d -name ".mypy_cache" -delete -o \
+		-type d -empty -delete
 
 watch:
 	scripts/modd
